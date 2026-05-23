@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Quest Log">
+<meta name="theme-color" content="#8a5f00">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>QUEST LOG</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --bg: #e8ebf4;
+    --bg2: #ffffff;
+    --bg3: #dde1ef;
+    --border: #b0b8d8;
+    --gold: #8a5f00;
+    --gold2: #b07800;
+    --silver: #3a4e7a;
+    --red: #b81c1c;
+    --green: #1a6e3a;
+    --blue: #1a4faa;
+    --text: #0d1220;
+    --text-dim: #445070;
+    --short: #1a6e3a;
+    --mid: #1a4faa;
+    --card-goal-1: #fff4d6;
+    --card-goal-2: #d8eaff;
+    --card-goal-3: #d6f5e8;
+    --card-goal-border-1: #c8940a;
+    --card-goal-border-2: #1a60c8;
+    --card-goal-border-3: #1a7a48;
+    --section-short-bg: #d0f0e0;
+    --section-short-border: #1a7a48;
+    --section-mid-bg: #d0e4ff;
+    --section-mid-border: #1a4faa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 18px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-image:
+      radial-gradient(ellipse at 15% 0%, rgba(91,141,217,0.08) 0%, transparent 45%),
+      radial-gradient(ellipse at 85% 100%, rgba(201,168,76,0.07) 0%, transparent 45%);
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(8px);
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(30,35,64,0.07);
+  }
+
+  .logo {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--gold);
+  }
+
+  .hud { display: flex; align-items: center; gap: 16px; }
+
+  .hud-stat { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+
+  .hud-label {
+    font-size: 9px; letter-spacing: 2px; color: var(--text-dim);
+    text-transform: uppercase; font-family: 'Cinzel', serif;
+  }
+
+  .hud-value { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; color: var(--gold); }
+
+  .level-badge {
+    background: linear-gradient(135deg, var(--gold), #8a6010);
+    color: #fff; font-family: 'Cinzel', serif; font-weight: 900;
+    font-size: 13px; letter-spacing: 1px; padding: 6px 14px;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+
+  .xp-bar-wrap { width: 100px; }
+
+  .xp-bar-label {
+    display: flex; justify-content: space-between;
+    font-size: 9px; color: var(--text-dim); margin-bottom: 3px;
+    font-family: 'Cinzel', serif; letter-spacing: 1px;
+  }
+
+  .xp-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+
+  .xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold2));
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(.22,1,.36,1);
+  }
+
+  .streak-box {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 10px; border: 1px solid #e8c840;
+    background: #fffbee; border-radius: 4px;
+  }
+  .streak-fire { font-size: 17px; }
+
+  /* ── MAIN ── */
+  main { max-width: 720px; margin: 0 auto; padding: 20px 16px 80px; }
+
+  .section-header {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Cinzel', serif; font-size: 11px;
+    letter-spacing: 4px; color: var(--text-dim); text-transform: uppercase;
+  }
+
+  .btn {
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 2px;
+    padding: 9px 20px; border: none; cursor: pointer;
+    transition: all 0.2s; text-transform: uppercase; border-radius: 4px;
+  }
+
+  .btn-gold { background: var(--gold); color: #fff; clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%); }
+  .btn-gold:hover, .btn-gold:active { background: var(--gold2); }
+  .btn-ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+  .btn-ghost:hover, .btn-ghost:active { color: var(--text); border-color: var(--silver); }
+  .btn-sm { font-size: 10px; padding: 6px 12px; letter-spacing: 1px; }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(184,28,28,0.3); }
+  .btn-danger:hover, .btn-danger:active { border-color: var(--red); background: rgba(184,28,28,0.06); }
+
+  /* ── GOAL CARD ── */
+  .goal-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-left: 6px solid var(--gold); margin-bottom: 14px;
+    overflow: hidden; border-radius: 8px;
+    transition: box-shadow 0.3s; animation: fadeIn 0.35s ease;
+    box-shadow: 0 2px 8px rgba(30,35,64,0.07);
+  }
+
+  .goal-card:nth-child(1) { border-left-color: var(--card-goal-border-1); background: var(--card-goal-1); }
+  .goal-card:nth-child(2) { border-left-color: var(--card-goal-border-2); background: var(--card-goal-2); }
+  .goal-card:nth-child(3) { border-left-color: var(--card-goal-border-3); background: var(--card-goal-3); }
+
+  .goal-card:hover { box-shadow: 0 4px 18px rgba(30,35,64,0.12); }
+  .goal-card.completed { opacity: 0.75; }
+  .goal-card.completed .goal-name::after { content: " ✓"; color: var(--green); }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── GOAL HEADER ── */
+  .goal-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; cursor: pointer; user-select: none;
+    border-bottom: 1px solid transparent; transition: border-color 0.3s;
+  }
+  .goal-card.open .goal-header { border-bottom-color: var(--border); }
+
+  /* goal photo thumbnail */
+  .goal-thumb {
+    width: 48px; height: 48px; border-radius: 6px;
+    object-fit: cover; flex-shrink: 0;
+    border: 2px solid rgba(0,0,0,0.1);
+  }
+
+  .goal-icon-wrap {
+    width: 48px; height: 48px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0;
+    background: rgba(255,255,255,0.5);
+    border: 2px dashed rgba(0,0,0,0.12);
+    cursor: pointer; transition: background 0.2s;
+  }
+  .goal-icon-wrap:hover { background: rgba(255,255,255,0.9); }
+  .goal-icon-wrap input[type=file] { display: none; }
+
+  .goal-info { flex: 1; min-width: 0; }
+
+  .goal-name {
+    font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700;
+    color: var(--text); margin-bottom: 5px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .goal-progress-row { display: flex; align-items: center; gap: 8px; }
+
+  .progress-bar { flex: 1; height: 8px; background: rgba(30,35,64,0.15); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(.22,1,.36,1); }
+  .fill-long  { background: linear-gradient(90deg, #c8960a, #f0c030); }
+  .fill-mid   { background: linear-gradient(90deg, #2a58b0, #5a90e8); }
+  .fill-short { background: linear-gradient(90deg, #1a7040, #40c080); }
+
+  .progress-pct { font-size: 12px; color: var(--text-dim); font-family: 'Cinzel', serif; min-width: 34px; text-align: right; }
+
+  .goal-chevron { color: var(--text-dim); font-size: 12px; transition: transform 0.3s; flex-shrink: 0; }
+  .goal-card.open .goal-chevron { transform: rotate(180deg); }
+
+  /* ── GOAL BODY ── */
+  .goal-body { display: none; padding: 16px; }
+  .goal-card.open .goal-body { display: block; }
+
+  /* ── NOTES BLOCK ── */
+  .notes-block {
+    margin-bottom: 14px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .notes-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; cursor: pointer; user-select: none;
+    border-bottom: 1px solid transparent; transition: border-color 0.2s;
+    background: rgba(255,255,255,0.4);
+  }
+  .notes-block.open .notes-header { border-bottom-color: var(--border); }
+
+  .notes-title {
+    font-family: 'Cinzel', serif; font-size: 10px;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim);
+  }
+  .notes-chevron { font-size: 10px; color: var(--text-dim); transition: transform 0.2s; }
+  .notes-block.open .notes-chevron { transform: rotate(180deg); }
+
+  .notes-area-wrap { display: none; padding: 10px 12px; }
+  .notes-block.open .notes-area-wrap { display: block; }
+
+  .notes-textarea {
+    width: 100%; min-height: 80px; max-height: 200px;
+    background: transparent; border: none; outline: none; resize: vertical;
+    font-family: 'Crimson Pro', Georgia, serif; font-size: 16px;
+    color: var(--text); line-height: 1.5;
+  }
+  .notes-textarea::placeholder { color: var(--text-dim); font-style: italic; }
+
+  /* ── QUEST SECTIONS ── */
+  .quests-section {
+    margin-bottom: 12px; padding: 12px 14px; border-radius: 6px;
+  }
+  .quests-section[data-section="short"] { background: var(--section-short-bg); border: 2px solid var(--section-short-border); }
+  .quests-section[data-section="mid"]   { background: var(--section-mid-bg);   border: 2px solid var(--section-mid-border); }
+
+  .quest-type-title {
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .qt-short { color: var(--short); }
+  .qt-mid   { color: var(--blue); }
+  .qt-line  { flex: 1; height: 1px; background: var(--border); }
+
+  .quest-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 10px; border-radius: 5px; margin-bottom: 6px;
+    transition: background 0.2s; animation: fadeIn 0.3s ease;
+    background: rgba(255,255,255,0.7); border: 1px solid rgba(30,35,64,0.08);
+  }
+  .quest-item:hover, .quest-item:active { background: rgba(255,255,255,0.95); }
+
+  .quest-check {
+    width: 26px; height: 26px; border: 2px solid var(--border); border-radius: 5px;
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; transition: all 0.2s; font-size: 14px; background: #fff;
+    touch-action: manipulation;
+  }
+  .quest-item[data-type="short"] .quest-check:hover { border-color: var(--short); background: rgba(26,110,58,0.1); }
+  .quest-item[data-type="mid"]   .quest-check:hover { border-color: var(--blue);  background: rgba(26,79,170,0.1); }
+  .quest-item.done .quest-check  { border-color: var(--green); background: rgba(26,110,58,0.15); color: var(--green); }
+
+  .quest-text { flex: 1; font-size: 17px; color: var(--text); transition: color 0.2s; line-height: 1.35; }
+  .quest-item.done .quest-text { color: var(--text-dim); text-decoration: line-through; text-decoration-color: var(--text-dim); }
+
+  .quest-xp { font-family: 'Cinzel', serif; font-size: 11px; color: var(--gold); flex-shrink: 0; font-weight: 700; }
+
+  .quest-del {
+    opacity: 0; background: transparent; border: none; color: var(--red);
+    cursor: pointer; font-size: 16px; padding: 4px 6px; transition: opacity 0.2s;
+    touch-action: manipulation;
+  }
+  .quest-item:hover .quest-del { opacity: 0.4; }
+  .quest-del:hover, .quest-del:active { opacity: 1 !important; }
+
+  .add-quest-row { display: flex; gap: 8px; margin-top: 8px; }
+
+  .input-dark {
+    background: #fff; border: 1px solid var(--border); color: var(--text);
+    padding: 9px 12px; font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 17px; outline: none; transition: border-color 0.2s;
+    flex: 1; border-radius: 4px;
+  }
+  .input-dark:focus { border-color: var(--silver); box-shadow: 0 0 0 3px rgba(90,106,138,0.1); }
+  .input-dark::placeholder { color: var(--text-dim); }
+
+  /* ── GOAL STATS ── */
+  .goal-stats {
+    display: flex; gap: 14px; padding-top: 12px;
+    margin-top: 12px; border-top: 1px solid var(--border); flex-wrap: wrap; align-items: center;
+  }
+  .gstat { display: flex; flex-direction: column; gap: 2px; }
+  .gstat-label { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); font-family: 'Cinzel', serif; text-transform: uppercase; }
+  .gstat-value { font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(13,18,32,0.45); z-index: 200;
+    align-items: flex-end; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: #fff; border-radius: 16px 16px 0 0;
+    width: 100%; max-width: 600px; padding: 24px 24px 36px;
+    animation: slideUp 0.28s cubic-bezier(.22,1,.36,1);
+    max-height: 90vh; overflow-y: auto;
+  }
+
+  @keyframes slideUp { from { transform: translateY(100%); opacity:0; } to { transform: translateY(0); opacity:1; } }
+
+  .modal-title { font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700; color: var(--gold); letter-spacing: 2px; margin-bottom: 20px; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 10px; letter-spacing: 2px; color: var(--text-dim); font-family: 'Cinzel', serif; text-transform: uppercase; margin-bottom: 6px; }
+
+  .emoji-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+  .emoji-opt { font-size: 24px; padding: 8px; border: 2px solid var(--border); cursor: pointer; border-radius: 8px; transition: all 0.15s; background: #f8f9fc; touch-action: manipulation; }
+  .emoji-opt:hover, .emoji-opt.sel { border-color: var(--gold); background: #fffbee; }
+
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+  .empty-glyph { font-size: 52px; margin-bottom: 16px; opacity: 0.3; }
+  .empty-title { font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 3px; color: var(--text-dim); margin-bottom: 8px; }
+  .empty-sub { font-size: 15px; font-style: italic; opacity: 0.6; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #fff; border: 1px solid var(--gold); border-left: 4px solid var(--gold);
+    border-radius: 8px; padding: 13px 22px;
+    font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 1px;
+    color: var(--gold); z-index: 300;
+    animation: toastIn 0.3s ease; pointer-events: none;
+    box-shadow: 0 4px 20px rgba(184,134,11,0.18); white-space: nowrap;
+  }
+  @keyframes toastIn { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+  /* ── MOBILE ── */
+  @media(max-width: 480px) {
+    header { padding: 10px 14px; }
+    .logo { font-size: 17px; letter-spacing: 3px; }
+    .hud { gap: 10px; }
+    .xp-bar-wrap { width: 80px; }
+    .level-badge { font-size: 12px; padding: 5px 10px; }
+    main { padding: 14px 12px 80px; }
+    .goal-name { font-size: 15px; }
+    .hud-value { font-size: 16px; }
+    .modal { padding: 20px 18px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">QUEST LOG</div>
+  <div class="hud">
+    <div class="streak-box">
+      <span class="streak-fire">🔥</span>
+      <div class="hud-stat">
+        <span class="hud-label">Streak</span>
+        <span class="hud-value" id="hud-streak">0</span>
+      </div>
+    </div>
+    <div class="hud-stat">
+      <span class="hud-label">XP</span>
+      <span class="hud-value" id="hud-xp">0</span>
+    </div>
+    <div class="xp-bar-wrap">
+      <div class="xp-bar-label">
+        <span id="lvl-label">LVL 1</span>
+        <span id="lvl-next"></span>
+      </div>
+      <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    </div>
+    <div class="level-badge" id="hud-level">I</div>
+  </div>
+</header>
+
+<main>
+  <div class="section-header">
+    <span class="section-title">⚔ Головні Цілі</span>
+    <button class="btn btn-gold" id="btn-add-goal">+ Нова Ціль</button>
+  </div>
+  <div id="goals-list"></div>
+</main>
+
+<!-- MODAL: Add Goal -->
+<div class="modal-overlay" id="modal-goal">
+  <div class="modal">
+    <div class="modal-title">⚔ НОВА ЦІЛЬ</div>
+    <div class="form-group">
+      <label class="form-label">Назва цілі</label>
+      <input class="input-dark" id="goal-name-inp" type="text" placeholder="Наприклад: Вивчити німецьку до B2..." maxlength="60">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Іконка</label>
+      <div class="emoji-grid" id="emoji-grid">
+        <button class="emoji-opt sel" data-e="⚔">⚔</button>
+        <button class="emoji-opt" data-e="🏆">🏆</button>
+        <button class="emoji-opt" data-e="🎯">🎯</button>
+        <button class="emoji-opt" data-e="🚀">🚀</button>
+        <button class="emoji-opt" data-e="📚">📚</button>
+        <button class="emoji-opt" data-e="💪">💪</button>
+        <button class="emoji-opt" data-e="🌟">🌟</button>
+        <button class="emoji-opt" data-e="🔥">🔥</button>
+        <button class="emoji-opt" data-e="🛡">🛡</button>
+        <button class="emoji-opt" data-e="⚡">⚡</button>
+        <button class="emoji-opt" data-e="🎣">🎣</button>
+        <button class="emoji-opt" data-e="🏠">🏠</button>
+        <button class="emoji-opt" data-e="💼">💼</button>
+        <button class="emoji-opt" data-e="🌱">🌱</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modal-goal-cancel">Скасувати</button>
+      <button class="btn btn-gold" id="modal-goal-ok">Створити</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'questlog_v2';
+const XP_SHORT = 10, XP_MID = 30;
+const LEVELS = [0,100,250,500,900,1400,2100,3000,4200,6000];
+const ROMAN  = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
+
+// ── DATA ──
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || blank(); }
+  catch { return blank(); }
+}
+function blank() { return { goals:[], totalXP:0, streak:0, lastDate:null }; }
+function save()  { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+let state = load();
+
+// Migrate old v1 data if present
+(function migrate() {
+  try {
+    const old = JSON.parse(localStorage.getItem('questlog_v1'));
+    if (old && old.goals && !localStorage.getItem(STORAGE_KEY)) {
+      state = { goals: old.goals, totalXP: old.totalXP||0, streak: old.streak||0, lastDate: old.lastDate||null };
+      save();
+    }
+  } catch {}
+})();
+
+// ── STREAK ──
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function touchStreak() {
+  const today = todayStr();
+  if (state.lastDate === today) return;
+  const yest = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  state.streak = (state.lastDate === yest) ? state.streak + 1 : 1;
+  state.lastDate = today;
+}
+
+// ── LEVEL ──
+function levelInfo(xp) {
+  let l = 0;
+  for (let i=0;i<LEVELS.length;i++) { if (xp >= LEVELS[i]) l=i; else break; }
+  const cur = LEVELS[l], nxt = LEVELS[Math.min(l+1,LEVELS.length-1)];
+  const pct = l >= LEVELS.length-1 ? 100 : ((xp-cur)/(nxt-cur))*100;
+  return { lvl:l+1, pct, toNext: Math.max(0,nxt-xp), roman:ROMAN[l] };
+}
+
+// ── HUD ──
+function renderHUD() {
+  const li = levelInfo(state.totalXP);
+  document.getElementById('hud-xp').textContent    = state.totalXP;
+  document.getElementById('hud-streak').textContent = state.streak;
+  document.getElementById('hud-level').textContent  = li.roman;
+  document.getElementById('lvl-label').textContent  = 'LVL '+li.lvl;
+  document.getElementById('lvl-next').textContent   = li.toNext > 0 ? '+'+li.toNext : 'MAX';
+  document.getElementById('xp-fill').style.width    = li.pct+'%';
+}
+
+// ── PROGRESS ──
+function goalProg(goal) {
+  const sh = goal.quests.filter(q=>q.type==='short');
+  const mi = goal.quests.filter(q=>q.type==='mid');
+  const ds = sh.filter(q=>q.done).length;
+  const dm = mi.filter(q=>q.done).length;
+  const total = sh.length + mi.length;
+  const done  = ds + dm;
+  return { pct: total ? Math.round(done/total*100) : 0, ds, sh:sh.length, dm, mi:mi.length };
+}
+
+// ── IMAGE STORAGE ──
+function imgKey(gi) { return `questlog_img_${gi}`; }
+function saveImg(gi, dataUrl) {
+  try { localStorage.setItem(imgKey(gi), dataUrl); } catch(e) { showToast('Фото завелике для памʼяті!'); }
+}
+function loadImg(gi) {
+  try { return localStorage.getItem(imgKey(gi)); } catch { return null; }
+}
+function deleteImg(gi) {
+  try { localStorage.removeItem(imgKey(gi)); } catch {}
+}
+
+// ── RENDER GOALS ──
+function renderGoals() {
+  const c = document.getElementById('goals-list');
+  c.innerHTML = '';
+
+  if (!state.goals.length) {
+    c.innerHTML = `<div class="empty-state">
+      <div class="empty-glyph">⚔</div>
+      <div class="empty-title">Журнал порожній</div>
+      <div class="empty-sub">Додай свою першу велику ціль</div>
+    </div>`;
+    return;
+  }
+
+  state.goals.forEach((goal, gi) => {
+    const prog = goalProg(goal);
+    const isOpen = !!goal.open;
+    const isDone = prog.pct === 100;
+    const imgData = loadImg(gi);
+
+    const card = document.createElement('div');
+    card.className = 'goal-card' + (isOpen?' open':'') + (isDone?' completed':'');
+
+    // Build photo/icon area
+    const photoHtml = imgData
+      ? `<div class="goal-icon-wrap" data-photo-gi="${gi}" title="Натисни щоб змінити фото">
+           <img class="goal-thumb" src="${imgData}" alt="">
+           <input type="file" accept="image/*" data-img-gi="${gi}">
+         </div>`
+      : `<div class="goal-icon-wrap" data-photo-gi="${gi}" title="Додати фото">
+           <span>${goal.icon}</span>
+           <input type="file" accept="image/*" data-img-gi="${gi}">
+         </div>`;
+
+    // Notes
+    const notesOpen = !!goal.notesOpen;
+    const notesHtml = `
+      <div class="notes-block${notesOpen?' open':''}" data-notes-gi="${gi}">
+        <div class="notes-header" data-notes-toggle="${gi}">
+          <span class="notes-title">📝 Нотатки</span>
+          <span class="notes-chevron">▼</span>
+        </div>
+        <div class="notes-area-wrap">
+          <textarea class="notes-textarea"
+            data-notes-gi="${gi}"
+            placeholder="Записуй думки, ідеї, спостереження прямо тут..."
+          >${escHtml(goal.notes||'')}</textarea>
+        </div>
+      </div>`;
+
+    card.innerHTML = `
+      <div class="goal-header" data-toggle="${gi}">
+        ${photoHtml}
+        <div class="goal-info">
+          <div class="goal-name">${escHtml(goal.name)}</div>
+          <div class="goal-progress-row">
+            <div class="progress-bar"><div class="progress-fill fill-long" style="width:${prog.pct}%"></div></div>
+            <span class="progress-pct">${prog.pct}%</span>
+          </div>
+        </div>
+        <span class="goal-chevron">▼</span>
+      </div>
+      <div class="goal-body">
+        ${notesHtml}
+        ${renderQSection(gi, goal, 'short')}
+        ${renderQSection(gi, goal, 'mid')}
+        <div class="goal-stats">
+          <div class="gstat">
+            <span class="gstat-label" style="color:var(--short)">⚡ Короткі</span>
+            <span class="gstat-value" style="color:var(--short)">${prog.ds}/${prog.sh}</span>
+          </div>
+          <div class="gstat">
+            <span class="gstat-label" style="color:var(--blue)">⚙ Середні</span>
+            <span class="gstat-value" style="color:var(--blue)">${prog.dm}/${prog.mi}</span>
+          </div>
+          <div class="gstat">
+            <span class="gstat-label">🎯 Прогрес</span>
+            <span class="gstat-value" style="color:var(--gold)">${prog.pct}%</span>
+          </div>
+          <div style="margin-left:auto">
+            <button class="btn btn-ghost btn-sm btn-danger" data-del-goal="${gi}">✕ Видалити</button>
+          </div>
+        </div>
+      </div>`;
+
+    c.appendChild(card);
+  });
+
+  bindEvents();
+}
+
+function renderQSection(gi, goal, type) {
+  const qs = goal.quests.filter(q=>q.type===type);
+  const label = type==='short'
+    ? '<span class="qt-short">⚡ КОРОТКІ</span> (5–20 хв)'
+    : '<span class="qt-mid">⚙ СЕРЕДНІ</span> (30 хв – 2 год)';
+  const xpVal = type==='short' ? XP_SHORT : XP_MID;
+  const fc    = type==='short' ? 'fill-short' : 'fill-mid';
+  const done  = qs.filter(q=>q.done).length;
+  const pct   = qs.length ? Math.round(done/qs.length*100) : 0;
+
+  const items = qs.map(q => {
+    const ri = goal.quests.findIndex(x=>x===q);
+    return `<div class="quest-item ${q.done?'done':''}" data-type="${type}">
+      <div class="quest-check" data-gi="${gi}" data-qi="${ri}">${q.done?'✓':''}</div>
+      <span class="quest-text">${escHtml(q.text)}</span>
+      <span class="quest-xp">+${xpVal} XP</span>
+      <button class="quest-del" data-gi="${gi}" data-qi="${ri}">✕</button>
+    </div>`;
+  }).join('');
+
+  return `<div class="quests-section" data-section="${type}">
+    <div class="quest-type-title">
+      ${label}
+      <div class="qt-line"></div>
+      <span style="color:var(--text-dim);font-size:10px">${done}/${qs.length}</span>
+      ${qs.length ? `<div class="progress-bar" style="width:56px"><div class="progress-fill ${fc}" style="width:${pct}%"></div></div>` : ''}
+    </div>
+    ${items}
+    <div class="add-quest-row">
+      <input class="input-dark" type="text"
+        placeholder="Додати завдання..."
+        data-add-type="${type}" data-gi="${gi}"
+        style="font-size:16px;padding:7px 10px">
+      <button class="btn btn-ghost btn-sm" data-add-btn="${type}" data-gi="${gi}">+</button>
+    </div>
+  </div>`;
+}
+
+// ── BIND EVENTS ──
+function bindEvents() {
+
+  // Toggle goal open — тільки перемикаємо клас, без re-render
+  document.querySelectorAll('[data-toggle]').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('.goal-icon-wrap')) return;
+      const gi = parseInt(el.dataset.toggle);
+      state.goals[gi].open = !state.goals[gi].open;
+      save();
+      const card = el.closest('.goal-card');
+      if (card) card.classList.toggle('open', state.goals[gi].open);
+    });
+  });
+
+  // Photo upload
+  document.querySelectorAll('.goal-icon-wrap').forEach(wrap => {
+    wrap.addEventListener('click', e => {
+      e.stopPropagation();
+      const inp = wrap.querySelector('input[type=file]');
+      inp && inp.click();
+    });
+    const inp = wrap.querySelector('input[type=file]');
+    if (inp) inp.addEventListener('change', e => {
+      const gi = parseInt(inp.dataset.imgGi);
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        // Resize to max 400px to save localStorage space
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 400;
+          let w = img.width, h = img.height;
+          if (w > h && w > MAX) { h = h*MAX/w; w = MAX; }
+          else if (h > MAX)     { w = w*MAX/h; h = MAX; }
+          const cv = document.createElement('canvas');
+          cv.width = w; cv.height = h;
+          cv.getContext('2d').drawImage(img, 0, 0, w, h);
+          saveImg(gi, cv.toDataURL('image/jpeg', 0.82));
+          renderGoals();
+          showToast('Фото збережено 📸');
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  // Notes toggle — оновлюємо тільки DOM, без повного re-render
+  document.querySelectorAll('[data-notes-toggle]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      const gi = parseInt(el.dataset.notesToggle);
+      state.goals[gi].notesOpen = !state.goals[gi].notesOpen;
+      save();
+      // Знаходимо блок нотаток і просто перемикаємо клас
+      const block = document.querySelector(`.notes-block[data-notes-gi="${gi}"]`);
+      if (block) block.classList.toggle('open', state.goals[gi].notesOpen);
+    });
+  });
+
+  // Notes autosave
+  document.querySelectorAll('textarea[data-notes-gi]').forEach(ta => {
+    ta.addEventListener('click', e => e.stopPropagation());
+    ta.addEventListener('input', () => {
+      const gi = parseInt(ta.dataset.notesGi);
+      state.goals[gi].notes = ta.value;
+      save();
+    });
+  });
+
+  // Check quest
+  document.querySelectorAll('.quest-check').forEach(ch => {
+    ch.addEventListener('click', e => {
+      e.stopPropagation();
+      const gi = parseInt(ch.dataset.gi), qi = parseInt(ch.dataset.qi);
+      const q = state.goals[gi].quests[qi];
+      const xp = q.type==='short' ? XP_SHORT : XP_MID;
+      if (!q.done) {
+        q.done = true;
+        state.totalXP += xp;
+        touchStreak();
+        showToast(`+${xp} XP  ⚡`);
+      } else {
+        q.done = false;
+        state.totalXP = Math.max(0, state.totalXP - xp);
+      }
+      save(); renderHUD(); renderGoals();
+    });
+  });
+
+  // Delete quest
+  document.querySelectorAll('.quest-del').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const gi = parseInt(btn.dataset.gi), qi = parseInt(btn.dataset.qi);
+      const q = state.goals[gi].quests[qi];
+      if (q.done) state.totalXP = Math.max(0, state.totalXP - (q.type==='short'?XP_SHORT:XP_MID));
+      state.goals[gi].quests.splice(qi, 1);
+      save(); renderHUD(); renderGoals();
+    });
+  });
+
+  // Add quest button
+  document.querySelectorAll('[data-add-btn]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const gi = parseInt(btn.dataset.gi), type = btn.dataset.addBtn;
+      addQuest(gi, type, document.querySelector(`input[data-add-type="${type}"][data-gi="${gi}"]`));
+    });
+  });
+
+  // Add quest enter
+  document.querySelectorAll('input[data-add-type]').forEach(inp => {
+    inp.addEventListener('click', e => e.stopPropagation());
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.stopPropagation(); addQuest(parseInt(inp.dataset.gi), inp.dataset.addType, inp); }
+    });
+  });
+
+  // Delete goal
+  document.querySelectorAll('[data-del-goal]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const gi = parseInt(btn.dataset.delGoal);
+      if (!confirm(`Видалити ціль "${state.goals[gi].name}"?`)) return;
+      state.goals[gi].quests.forEach(q => {
+        if (q.done) state.totalXP = Math.max(0, state.totalXP - (q.type==='short'?XP_SHORT:XP_MID));
+      });
+      deleteImg(gi);
+      state.goals.splice(gi, 1);
+      save(); renderHUD(); renderGoals();
+    });
+  });
+}
+
+function addQuest(gi, type, inp) {
+  const text = inp.value.trim();
+  if (!text) return;
+  state.goals[gi].quests.push({ text, type, done:false });
+  inp.value = '';
+  save(); renderGoals();
+}
+
+// ── MODAL ──
+let selEmoji = '⚔';
+
+document.getElementById('btn-add-goal').addEventListener('click', () => {
+  if (state.goals.length >= 3) { showToast('Максимум 3 цілі!'); return; }
+  document.getElementById('goal-name-inp').value = '';
+  document.getElementById('modal-goal').classList.add('active');
+  setTimeout(() => document.getElementById('goal-name-inp').focus(), 300);
+});
+
+document.getElementById('modal-goal-cancel').addEventListener('click', () =>
+  document.getElementById('modal-goal').classList.remove('active'));
+
+document.getElementById('modal-goal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-goal'))
+    document.getElementById('modal-goal').classList.remove('active');
+});
+
+document.querySelectorAll('.emoji-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.emoji-opt').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    selEmoji = btn.dataset.e;
+  });
+});
+
+document.getElementById('modal-goal-ok').addEventListener('click', createGoal);
+document.getElementById('goal-name-inp').addEventListener('keydown', e => { if (e.key==='Enter') createGoal(); });
+
+function createGoal() {
+  const name = document.getElementById('goal-name-inp').value.trim();
+  if (!name) { document.getElementById('goal-name-inp').focus(); return; }
+  state.goals.push({ name, icon:selEmoji, quests:[], open:true, notes:'', notesOpen:false });
+  save();
+  document.getElementById('modal-goal').classList.remove('active');
+  renderGoals();
+  showToast('Ціль створена! Додай завдання нижче 🎯');
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  document.querySelector('.toast')?.remove();
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── INIT ──
+renderHUD();
+renderGoals();
+</script>
+</body>
+</html>
